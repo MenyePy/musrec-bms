@@ -80,4 +80,43 @@ router.patch('/applications/:id', adminAuth, async (req, res) => {
   }
 });
 
+// @route   PUT /admin/application/:id/approve
+// @desc    Approve a business application
+// @access  Admin
+router.put('/application/:id/approve', adminAuth, async (req, res) => {
+  try {
+    const application = await Business.findById(req.params.id);
+    if (!application) {
+      return res.status(404).json({ msg: 'Application not found' });
+    }
+    application.status = 'Approved';
+    application.adminMessage = req.body.adminMessage || '';
+
+    await application.save();
+    res.json({ msg: 'Application approved', application });
+  } catch (err) {
+    res.status(500).send('Server error');
+  }
+});
+
+// @route   PUT /admin/application/:id/reject
+// @desc    Reject a business application
+// @access  Admin
+router.put('/application/:id/reject', adminAuth, async (req, res) => {
+  try {
+    const application = await Business.findById(req.params.id);
+    if (!application) {
+      return res.status(404).json({ msg: 'Application not found' });
+    }
+    application.status = 'Rejected';
+    application.adminMessage = req.body.adminMessage || '';
+
+    await application.save();
+    res.json({ msg: 'Application rejected', application });
+  } catch (err) {
+    res.status(500).send('Server error');
+  }
+});
+
+
 module.exports = router;

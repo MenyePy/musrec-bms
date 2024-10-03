@@ -4,25 +4,32 @@ const auth = require('../middleware/auth');
 const router = express.Router();
 
 // @route   GET /user/dashboard
-// @desc    Get user dashboard with contract and rent status
-// @access  User
+// @desc    Get user dashboard data
+// @access  Private (authenticated users only)
 router.get('/dashboard', auth, async (req, res) => {
-  try {
-    const businesses = await Business.find({ user: req.user.id, status: 'Approved' });
-
-    const dashboardData = businesses.map(business => ({
-      businessName: business.businessName,
-      contractStartDate: business.contractStartDate,
-      contractExpiryDate: business.contractExpiryDate,
-      nextNotificationDate: new Date(business.contractExpiryDate - 3*24*60*60*1000), // 3 days before expiry
-      rentStatus: business.rentStatus
-    }));
-
-    res.json(dashboardData);
-  } catch (err) {
-    res.status(500).send('Server error');
-  }
-});
+    try {
+      const user = await User.findById(req.user.id).select('-password');
+      const business = await Business.findOne({ user: req.user.id });
+  
+      if (!business) {
+        return res.status(400).json({ msg: 'No business application found' });
+      }
+  
+      const dashboardData = {
+        fullName: user.fullName,
+        email: user.email,
+        businessName: business.name,
+        applicationStatus: business.status,
+        contractDetails: business.contract,  // Include contract info if it exists
+        rentStatus: business.rentStatus,  // Include rent status details
+      };
+  
+      res.json(dashboardData);
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server Error');
+    }
+  });
 
 // @route   PATCH /user/profile
 // @desc    Update user profile details

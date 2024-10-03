@@ -16,7 +16,13 @@ const businessSchema = new mongoose.Schema({
     nextDueDate: Date,
     paidUntil: Date
   },
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  documents: [
+    {
+      title: String,
+      filePath: String
+    }
+  ]
 });
 
 module.exports = mongoose.model('Business', businessSchema);
